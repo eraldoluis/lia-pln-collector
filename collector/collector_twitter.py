@@ -97,7 +97,8 @@ if __name__ == "__main__":
 
     # Criar uma nova app e obter estes dados em https://apps.twitter.com
     # Salvar os dados no arquivo JSON abaixo.
-    apiConfig = json.load(open('twitter_api_config.json'))
+    with open('twitter_api_config.json') as f:
+        apiConfig = json.load(f)
     ckey = apiConfig['ckey']
     consumer_secret = apiConfig['consumer_secret']
     access_token_key = apiConfig['access_token_key']
