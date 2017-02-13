@@ -112,11 +112,14 @@ if __name__ == "__main__":
     auth = OAuthHandler(ckey, consumer_secret)
     auth.set_access_token(access_token_key, access_token_secret)
 
-    # Create the stream object.
-    twitterStream = Stream(auth, Listener(terms=keyword_list))
+    try:
+        # Create the stream object.
+        twitterStream = Stream(auth, Listener(terms=keyword_list))
 
-    while True:
-        # Start tracking.
-        twitterStream.filter(track=keyword_list, languages=['pt'])
-        # If disconnected, sleep for 5 minutes and try again.
-        time.sleep(5 * 60)
+        while True:
+            # Start tracking.
+            twitterStream.filter(track=keyword_list, languages=['pt'])
+            # If disconnected, sleep for 5 minutes and try again.
+            time.sleep(5 * 60)
+    except Exception as e:
+        logging.error(e)
