@@ -80,8 +80,14 @@ def decodeUtf8(txt):
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        sys.stderr.write('Syntax error!\n')
-        sys.stderr.write('Expected argument: <list of terms>\n')
+        sys.stderr.write('\n')
+        sys.stderr.write('Syntax error! Expected argument: <list of terms>\n')
+        sys.stderr.write('\n')
+        sys.stderr.write('The list of terms is a space-separated list of strings. ')
+        sys.stderr.write('Each string can be composed by more than one term if it ')
+        sys.stderr.write('is surrounded by double quote marks (").\n')
+        sys.stderr.write('For example: "sao paulo" santos.\n')
+        sys.stderr.write('\n')
         sys.exit(1)
 
     # Logging.
