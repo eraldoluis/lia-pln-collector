@@ -49,7 +49,7 @@ while True:
                 		'created_at': parse(tweet.get('created_at')) if 'created_at' in tweet else None,
                 		'coordinates': tweet.get('coordinates'),
                 		'lang': tweet.get('lang'),
-                '		user': {
+                		'user': {
                     		'id': user.get('id'),
                     		'id_str': user.get('id_str'),
                     		'screen_name': user.get('screen_name'),
