@@ -32,7 +32,7 @@ oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
 
 # Initiate the connection to Twitter Streaming API
 twitter_stream = TwitterStream(auth=oauth)
-sleepTime = None
+sleepTime = 0
 while True:
 	try:
 		# Get a sample of the public data following through Twitter
@@ -63,12 +63,12 @@ while True:
     			# as a TwitterDictResponse object.
     			# We convert it back to the JSON format to print/score
     			print tweet
-    
    			 # The command below will do pretty printing for JSON data, try it out
    			 #print json.dumps(tweet, indent=4)
+		sleepTime = 0
         except Exception as e:
         	sys.stderr.write(str(e)+ '\n')
-		if sleepTime is None:
+		if sleepTime is 0:
                 	sleepTime = 1
             	else:
                 	sleepTime *= 2
