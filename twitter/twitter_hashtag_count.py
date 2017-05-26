@@ -18,7 +18,6 @@ def getTextFromCsv():
 def getTextFromES():
     es = Elasticsearch("localhost:9200")
     query = {
-        "size": 10,
         "query": {
             "bool": {
                 "filter": [
