@@ -10,23 +10,30 @@ def getTextFromES():
     es = Elasticsearch("localhost:9200")
     query = {
         "query": {
-            "bool": {
-                "filter": [
-                    {
-                        "term": {
-                            "start": "2017-05-24T21:16:27.396400-04:00"
-                        }
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "filter": [
+                            {
+                                "term": {
+                                    "start": "2017-05-24T21:16:27.396400-04:00"
+                                }
+                            }
+                        ]
                     }
-                ]
+                },
+                "random_score": {},
+                "boost_mode": "replace"
             }
         }
     }
 
     for doc in scan(es, index="ctrls", doc_type="twitter", query=query):
         try:
+            id = doc["_id"]
             text = doc["_source"]["tweet"]["text"]
             if text is not None:
-                yield text
+                yield (id, text)
             else:
                 stdout.write("x")
         except:
@@ -37,9 +44,9 @@ def main(outFileName):
     outFile = open(outFileName, "wt", encoding="utf8")
 
     numTweets = 0
-    for tweet in getTextFromES():
+    for (id, tweet) in getTextFromES():
         tweet = " ".join(tweet.split())
-        outFile.write(tweet + "\n")
+        outFile.write(id + "\t" + tweet + "\n")
         numTweets += 1
         if numTweets % 10000 == 0:
             if numTweets % 100000 == 0:
