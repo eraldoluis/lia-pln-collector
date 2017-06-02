@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from dateutil.parser import parse
 from dateutil import tz
-
+from elasticsearch import Elasticsearch
 import logging
 import logging.config
 
@@ -24,7 +24,8 @@ ACCESS_TOKEN = apiConfig["access_token_key"]
 ACCESS_SECRET = apiConfig["access_token_secret"]
 CONSUMER_KEY = apiConfig["ckey"]
 CONSUMER_SECRET = apiConfig["consumer_secret"]
-
+es=Elasticsearch([{'host': 'localhost', 'port': 9200}],timeout=30)
+startTime = datetime.now(tz.tzlocal())
 logging.config.fileConfig('logging.conf')
 sys.stderr.write('Start Tracking\n')
 
@@ -33,16 +34,17 @@ oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
 # Initiate the connection to Twitter Streaming API
 twitter_stream = TwitterStream(auth=oauth)
 sleepTime = 0
+count = 0
 while True:
 	try:
 		# Get a sample of the public data following through Twitter
 		iterator = twitter_stream.statuses.sample(language = "pt")
 		for tweet in iterator:
-
+			
     			json.dumps(tweet)
 			user = tweet.get('user', {})
 			#Filtrar campos do tweet  	
-    			 tweet = {
+    			tweet = {
                 		'id': tweet.get('id'),
                 		'id_str': tweet.get('id_str'),
                 		'text': tweet.get('text'),
@@ -59,10 +61,20 @@ while True:
                     		'verified': user.get('verified')
                 		}
             		}
+			count += 1
     			# Twitter Python Tool wraps the data returned by Twitter 
     			# as a TwitterDictResponse object.
     			# We convert it back to the JSON format to print/score
-    			print tweet
+			#Salvar tweet no elastic search	
+    			es.index(index="sample",
+                          doc_type="twitter",
+                          body={
+                              "start": startTime,
+                              "count": count,
+                              "tweet": tweet
+                          })
+			if (count % 100) == 0:
+                		sys.stderr.write('%d tweets\n' % count)
    			 # The command below will do pretty printing for JSON data, try it out
    			 #print json.dumps(tweet, indent=4)
 		sleepTime = 0
