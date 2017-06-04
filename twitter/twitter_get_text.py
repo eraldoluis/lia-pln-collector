@@ -1,6 +1,7 @@
+import json
 import sys
 from codecs import open
-from sys import stdout
+from sys import stdout, stderr
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
@@ -10,20 +11,14 @@ def getTextFromES():
     es = Elasticsearch("localhost:9200")
     query = {
         "query": {
-            "function_score": {
-                "query": {
-                    "bool": {
-                        "filter": [
-                            {
-                                "term": {
-                                    "start": "2017-05-24T21:16:27.396400-04:00"
-                                }
-                            }
-                        ]
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "start": "2017-02-20T16:33:25.093458-04:00"
+                        }
                     }
-                },
-                "random_score": {},
-                "boost_mode": "replace"
+                ]
             }
         }
     }
@@ -36,8 +31,10 @@ def getTextFromES():
                 yield (id, text)
             else:
                 stdout.write("x")
+                stdout.flush()
         except:
             stdout.write("X")
+            stdout.flush()
 
 
 def main(outFileName):
