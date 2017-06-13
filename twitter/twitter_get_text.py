@@ -7,27 +7,38 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
 
 
-def getTextFromES():
+def getTextFromES(tweets):
     es = Elasticsearch("localhost:9200")
     query = {
+        
         "query": {
+          "function_score":{
+            "query":{
             "bool": {
-                "filter": [
+            "filter": [
                     {
                         "term": {
-                            "start": "2017-02-20T16:33:25.093458-04:00"
-                        }
+                            "start": "2017-05-24T21:16:27.396400-04:00"
                     }
-                ]
-            }
-        }
-    }
+                    }
+                    ]
+                    }
+                    },
+           "random_score":{},
+           "boost_mode":"replace"
+             }
+           }
+           }
 
+    count = 0
     for doc in scan(es, index="ctrls", doc_type="twitter", query=query):
         try:
             id = doc["_id"]
             text = doc["_source"]["tweet"]["text"]
+            if count >= tweets and tweets != -1:
+                break
             if text is not None:
+                count += 1
                 yield (id, text)
             else:
                 stdout.write("x")
@@ -37,11 +48,11 @@ def getTextFromES():
             stdout.flush()
 
 
-def main(outFileName):
+def main(outFileName, twts):
     outFile = open(outFileName, "wt", encoding="utf8")
 
     numTweets = 0
-    for (id, tweet) in getTextFromES():
+    for (id, tweet) in getTextFromES(twts):
         tweet = " ".join(tweet.split())
         outFile.write(id + "\t" + tweet + "\n")
         numTweets += 1
@@ -59,7 +70,11 @@ def main(outFileName):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print "Missing argument: <output file>"
+    if len(sys.argv) != 3 and len(sys.argv) != 2:
+        print "Missing argument: <output file> 'number of tweets'"
         exit(1)
-    main(sys.argv[1])
+    elif len(sys.argv) == 3:
+        tweets = int(sys.argv[2])
+    else:
+        tweets = -1
+    main(sys.argv[1], tweets)
