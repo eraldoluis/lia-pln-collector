@@ -40,9 +40,6 @@ def reindex(es, newIndex, start):
         }
     }
 
-    print query
-    sys.exit(0)
-
     ids = []
     docs = {}
     for doc in helpers.scan(es, index="ctrls", doc_type="twitter", query=query):
