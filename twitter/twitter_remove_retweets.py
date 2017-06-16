@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
-from datetime import datetime
 from sys import stdout
 
-from dateutil.parser import parse
-from dateutil import tz
-
+import sys
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
-
-import logging.config
-
 from tweepy import OAuthHandler
-
 from tweepy.api import API
 
 with open('../collector/twitter_api_config.json') as f:
@@ -30,20 +23,25 @@ auth.set_access_token(access_token_key, access_token_secret)
 api = API(auth_handler=auth)
 
 
-def reindex(es, newIndex):
+def reindex(es, newIndex, start):
     query = {
         "query": {
             "bool": {
                 "filter": [
                     {
                         "term": {
-                            "start": "2017-02-20T16:33:25.093458-04:00"
+                            "start": start
+                            # "start": "2017-02-20T16:33:30.542448-04:00"  # FUTEBOL
+                            # "start": "2017-02-20T16:33:25.093458-04:00"  # SUPERNATURAL
                         }
                     }
                 ]
             }
         }
     }
+
+    print query
+    sys.exit(0)
 
     ids = []
     docs = {}
@@ -77,13 +75,15 @@ def processTweets(ids, docs, newIndex):
                 '_source': doc['_source']
             }
             yield action
-        else:
-            pass
 
 
 def main():
+    if len(sys.argv) != 2:
+        print 'Missing argument: <start>'
+        sys.exit(1)
+
     es = Elasticsearch('localhost:9200')
-    res = helpers.bulk(es, reindex(es, "ctrls_no_retweet"))
+    res = helpers.bulk(es, reindex(es, "ctrls_no_retweet", sys.argv[1]))
     print res
     print 'Finished!'
 
