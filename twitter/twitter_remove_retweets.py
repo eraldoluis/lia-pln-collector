@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
+import traceback
 from sys import stdout
 
 import sys
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from tweepy import OAuthHandler
+from tweepy import TweepError
 from tweepy.api import API
 
 with open('../collector/twitter_api_config.json') as f:
@@ -59,19 +61,22 @@ def reindex(es, newIndex, start):
 
 
 def processTweets(ids, docs, newIndex):
-    res = api.statuses_lookup(ids)
-    for status in res:
-        tweet = status._json
-        if 'retweeted_status' not in tweet:
-            doc = docs[tweet["id_str"]]
-            action = {
-                '_op_type': 'index',
-                '_index': newIndex,
-                '_type': 'twitter',
-                '_id': doc['_id'],
-                '_source': doc['_source']
-            }
-            yield action
+    try:
+        res = api.statuses_lookup(ids)
+        for status in res:
+            tweet = status._json
+            if 'retweeted_status' not in tweet:
+                doc = docs[tweet["id_str"]]
+                action = {
+                    '_op_type': 'index',
+                    '_index': newIndex,
+                    '_type': 'twitter',
+                    '_id': doc['_id'],
+                    '_source': doc['_source']
+                }
+                yield action
+    except TweepError:
+        traceback.print_exc()
 
 
 def main():
