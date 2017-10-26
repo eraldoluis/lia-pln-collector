@@ -5,6 +5,8 @@ import json
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
 
+from codecs import open
+import sys
 
 def getTextFromCsv():
     # reader = csv.reader(open("/home/eraldo/lia/src/lia-pln-datasets-models/lucas_sa_twitter/sentiment_hashtags.csv"))
@@ -14,6 +16,14 @@ def getTextFromCsv():
     for line in reader:
         yield line[idxText]
 
+def getFromTextFile():
+    filePath = sys.argv[1]
+
+    if filePath != "-":
+        file = open(filePath, "rt", "utf-8")
+
+    for line in file:
+        yield line
 
 def getTextFromES():
     es = Elasticsearch("localhost:9200")
@@ -49,7 +59,7 @@ def main():
     numLines = 0
     hashtagHist = {}
     # for tweet in getTextFromCsv():
-    for tweet in getTextFromES():
+    for tweet in getFromTextFile():
         hashtags = set()
         for term in tweet.split():
             if term.startswith("#"):
@@ -70,13 +80,18 @@ def main():
 
     stdout.write(" done!\n")
 
+    usedAtLeast = 0
+    usedAtMost = 50
+
     sortedItems = sorted(hashtagHist.items(), key=lambda x: x[1], reverse=True)
-    for (i, item) in enumerate(sortedItems):
-        sortedItems[i] = list(item) + [float(item[1]) / numLines]
+
+    if (usedAtLeast is not 0 and usedAtMost is not 0):
+        for (i, item) in enumerate(sortedItems):
+            sortedItems[i] = list(item) + [float(item[1]) / numLines]
 
     print json.dumps(
         {
-            "mostFreq": sortedItems[:50],
+            "mostFreq": sortedItems[:1000],
             # "hist": hashtagHist,
             "countHashtags": len(hashtagHist),
             "countTweets": numLines
