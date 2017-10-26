@@ -1,7 +1,6 @@
-import json
 import sys
 from codecs import open
-from sys import stdout, stderr
+from sys import stdout
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
@@ -10,25 +9,24 @@ from elasticsearch.helpers import scan
 def getTextFromES(tweets):
     es = Elasticsearch("localhost:9200")
     query = {
-        
         "query": {
-          "function_score":{
-            "query":{
-            "bool": {
-            "filter": [
-                    {
-                        "term": {
-                            "start": "2017-05-24T21:16:27.396400-04:00"
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "filter": [
+                            {
+                                "term": {
+                                    "start": "2017-05-24T21:16:27.396400-04:00"
+                                }
+                            }
+                        ]
                     }
-                    }
-                    ]
-                    }
-                    },
-           "random_score":{},
-           "boost_mode":"replace"
-             }
-           }
-           }
+                },
+                "random_score": {},
+                "boost_mode": "replace"
+            }
+        }
+    }
 
     count = 0
     for doc in scan(es, index="ctrls", doc_type="twitter", query=query):

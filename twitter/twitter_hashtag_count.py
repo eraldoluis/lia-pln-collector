@@ -16,14 +16,12 @@ def getTextFromCsv():
     for line in reader:
         yield line[idxText]
 
-def getFromTextFile():
-    filePath = sys.argv[1]
 
-    if filePath != "-":
-        file = open(filePath, "rt", "utf-8")
+def getFromTextFile(filePath):
+    with open(filePath, "rt", "utf-8") as file:
+        for line in file:
+            yield line
 
-    for line in file:
-        yield line
 
 def getTextFromES():
     es = Elasticsearch("localhost:9200")
@@ -56,10 +54,16 @@ def getTextFromES():
 
 
 def main():
+    filePath = sys.argv[1]
+
+    maxHashtags = -1
+    if len(sys.argv) > 2:
+        maxHashtags = int(sys.argv[2])
+
     numLines = 0
     hashtagHist = {}
     # for tweet in getTextFromCsv():
-    for tweet in getFromTextFile():
+    for tweet in getFromTextFile(filePath):
         hashtags = set()
         for term in tweet.split():
             if term.startswith("#"):
@@ -89,9 +93,12 @@ def main():
         for (i, item) in enumerate(sortedItems):
             sortedItems[i] = list(item) + [float(item[1]) / numLines]
 
+    if maxHashtags > 0:
+        sortedItems = sortedItems[:maxHashtags]
+
     print json.dumps(
         {
-            "mostFreq": sortedItems[:1000],
+            "mostFreq": sortedItems,
             # "hist": hashtagHist,
             "countHashtags": len(hashtagHist),
             "countTweets": numLines
