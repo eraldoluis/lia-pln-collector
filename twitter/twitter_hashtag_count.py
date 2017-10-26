@@ -18,9 +18,16 @@ def getTextFromCsv():
 
 
 def getFromTextFile(filePath):
-    with open(filePath, "rt", "utf-8") as file:
-        for line in file:
-            yield line
+    if filePath != "-":
+        file = open(filePath, "rt", "utf-8")
+    else:
+        file = stdin
+
+    for line in file:
+        yield line
+
+    if filePath != "-":
+        file.close()
 
 
 def getTextFromES():
@@ -84,14 +91,10 @@ def main():
 
     stdout.write(" done!\n")
 
-    usedAtLeast = 0
-    usedAtMost = 50
-
     sortedItems = sorted(hashtagHist.items(), key=lambda x: x[1], reverse=True)
 
-    if (usedAtLeast is not 0 and usedAtMost is not 0):
-        for (i, item) in enumerate(sortedItems):
-            sortedItems[i] = list(item) + [float(item[1]) / numLines]
+    for (i, item) in enumerate(sortedItems):
+        sortedItems[i] = list(item) + [float(item[1]) / numLines]
 
     if maxHashtags > 0:
         sortedItems = sortedItems[:maxHashtags]
